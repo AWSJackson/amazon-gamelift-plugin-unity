@@ -1,13 +1,16 @@
 $ROOT_DIR="."
 $RUNTIME_PATH="$ROOT_DIR\Runtime"
+$RUNTIME_PLUGINS_PATH="$RUNTIME_PATH\Plugins"
 $TEMP_PATH="C:\Temp"
 $NUGET_EXE_PATH="$TEMP_PATH\nuget.exe"
+$S3_SERVER_SDK_BUCKET="https://gamelift-server-sdk-release.s3.us-west-2.amazonaws.com/csharp"
+$S3_SERVER_SDK_DOWNLOAD_LINK="$S3_SERVER_SDK_BUCKET/GameLift-CSharp-ServerSDK-5.1.0.zip"
 $TEMP_ZIP_PATH = "$TEMP_PATH\GameLiftServerSDK.zip"
 $TEMP_EXTRACTED_PATH = "$TEMP_PATH\GameLiftServerSDK"
-$SDK_PATH="$TEMP_EXTRACTED_PATH\GameLift-SDK-Release-4.0.2\GameLift-CSharp-ServerSDK-4.0.2"
-$SDK_CSPROJ_PATH="$SDK_PATH\Net45\GameLiftServerSDKNet45.csproj"
-$SDK_PACKAGES_CONFIG_PATH="$SDK_PATH\Net45\packages.config"
-$RUNTIME_PLUGINS_PATH="$RUNTIME_PATH\Plugins"
+$SDK_TARGET_FRAMEWORK="net462"
+$SDK_PATH="$TEMP_EXTRACTED_PATH\src"
+$SDK_CSPROJ_PATH="$SDK_PATH\src\GameLiftServerSDK\GameLiftServerSDK.csproj"
+$SDK_SLN_PATH="$SDK_PATH\GameLiftServerSDK.sln"
 
 if (-Not (Test-Path -Path $RUNTIME_PATH))
 {
@@ -17,7 +20,7 @@ if (-Not (Test-Path -Path $RUNTIME_PATH))
 
 if ((Get-Command "dotnet" -ErrorAction SilentlyContinue) -eq $null) 
 { 
-	Write-Host "Unable to find 'dotnet' executable in your PATH. See README on how to install the .NET 4.5 Developer Pack in order to build the Server SDK"
+	Write-Host "Unable to find 'dotnet' executable in your PATH. Install a version of .NET Core (See README on recommendation)"
 	exit 1
 }
 
@@ -26,7 +29,7 @@ if (-Not (Test-Path -Path $TEMP_EXTRACTED_PATH) )
 	if (-Not (Test-Path -Path $TEMP_ZIP_PATH) )
 	{
 		echo "Downloading GameLift Managed Servers SDK..."
-		iwr https://gamelift-release.s3-us-west-2.amazonaws.com/GameLift_06_03_2021.zip -OutFile $TEMP_ZIP_PATH
+		iwr $S3_SERVER_SDK_DOWNLOAD_LINK -OutFile $TEMP_ZIP_PATH
 	} 
 	else 
 	{
@@ -34,11 +37,10 @@ if (-Not (Test-Path -Path $TEMP_EXTRACTED_PATH) )
 	}
 	Expand-Archive -Force -LiteralPath $TEMP_ZIP_PATH -DestinationPath $TEMP_EXTRACTED_PATH
 
-	echo "Updating Newtonsoft.Json version used to 13.0.1 for compatibility with Unity 2020.3"
+	echo "Updating Newtonsoft.Json version used to 13.0.1 for compatibility with Unity 2020+"
 
 	(Get-Content $SDK_CSPROJ_PATH).replace('Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL', 'Newtonsoft.Json') | Set-Content $SDK_CSPROJ_PATH
 	(Get-Content $SDK_CSPROJ_PATH).replace('Newtonsoft.Json.9.0.1', 'Newtonsoft.Json.13.0.1') | Set-Content $SDK_CSPROJ_PATH
-	(Get-Content $SDK_PACKAGES_CONFIG_PATH).replace('id="Newtonsoft.Json" version="9.0.1"', 'id="Newtonsoft.Json" version="13.0.1"') | Set-Content $SDK_PACKAGES_CONFIG_PATH
 }
 else
 {
@@ -55,12 +57,12 @@ if (-Not (Test-Path -Path $NUGET_EXE_PATH) )
 }
 else
 {
-	echo "nuget.exe is already downloaded and stored at NUGET_EXE_PATH, skip downloading."
+	echo "nuget.exe is already downloaded and stored at $NUGET_EXE_PATH, skip downloading."
 }
 
 echo "Building GameLift Server SDK..."
-Invoke-Expression '& $NUGET_EXE_PATH restore "$SDK_PATH\GameLiftServerSDKNet45.sln" -PackagesDirectory "$SDK_PATH\packages"'
-dotnet build "$SDK_PATH\Net45\GameLiftServerSDKNet45.csproj" --configuration Release --output "$RUNTIME_PLUGINS_PATH"
+Invoke-Expression '& $NUGET_EXE_PATH restore "$SDK_SLN_PATH" -PackagesDirectory "$SDK_PATH\packages"'
+dotnet build "$SDK_CSPROJ_PATH" --configuration Release --output "$RUNTIME_PLUGINS_PATH" --framework "$SDK_TARGET_FRAMEWORK"
 
 # Newtonsoft.json is deleted in favor of the Newtonsoft.json dependency in Unity. See "com.unity.nuget.newtonsoft-json: x.x.x" dependency in package.json.
 
