@@ -259,9 +259,10 @@ namespace AmazonGameLift.Editor
             { Strings.AnywherePageComputeRegisterButton, "Register Compute"},
             { Strings.AnywherePageComputeReplaceComputeButton, "Register new Compute"},
             { Strings.AnywherePageComputeCancelReplaceButton, "Cancel"},
-            { Strings.AnywherePageLaunchClientTitle, "Launch Client"},
-            { Strings.AnywherePageLaunchClientLabel, "Run Game"},
-            { Strings.AnywherePageLaunchClientButton, "Launch Client"},
+            { Strings.AnywherePageLaunchTitle, "Launch Anywhere Process"},
+            { Strings.AnywherePageLaunchClientDescription, "Set Client Connection Settings for Anywhere using the dropdown menu, then build and launch your game client."},
+            { Strings.AnywherePageLaunchServerLabel, "Run Game"},
+            { Strings.AnywherePageLaunchServerButton, "Launch Server in Editor"},
             { Strings.AnywherePageStatusBoxDefaultErrorText, "An error occurred when trying to register a compute"},
             { Strings.AnywherePageStatusBoxNotBootstrappedWarning, "Profile configuration is incomplete, as bootstrapping is not completed, navigate to AWS User Profiles for next steps"},
             
