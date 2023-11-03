@@ -1,6 +1,7 @@
 ﻿// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+using AmazonGameLift.Runtime;
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -49,7 +50,29 @@ namespace AmazonGameLift.Editor
             GetPluginWindow().OpenTab(GameLiftPlugin.Pages.ManagedEC2);
         }
 
-        [MenuItem("Amazon GameLift/Sample Game/Import Sample Game", priority = 103)]
+        [MenuItem("Amazon GameLift/Show Client Connection Settings", priority = 103)]
+        public static void Run()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:GameLiftClientSettings");
+
+            if (guids.Length <= 0 || string.IsNullOrWhiteSpace(guids[0]))
+            {
+                Debug.LogError("No GameLiftClientSettings asset found. Please import the sample game or create one custom.");
+                return;
+            }
+
+            string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+
+            GameLiftClientSettings settings = AssetDatabase.LoadAssetAtPath<GameLiftClientSettings>(assetPath);
+
+            if (settings)
+            {
+                Selection.activeObject = settings;
+                EditorGUIUtility.PingObject(settings);
+            }
+        }
+
+        [MenuItem("Amazon GameLift/Sample Game/Import Sample Game", priority = 104)]
         public static void ImportSampleGame()
         {
             AssetDatabase.ImportPackage(_filePackagePath, interactive: true);
