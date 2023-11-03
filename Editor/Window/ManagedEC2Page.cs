@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using AmazonGameLift.Runtime;
 using OperatingSystem = Amazon.GameLift.OperatingSystem;
 
 namespace AmazonGameLift.Editor
@@ -23,6 +25,9 @@ namespace AmazonGameLift.Editor
         private readonly FleetParametersInput _fleetParamsInput;
         private readonly StatusIndicator _statusIndicator;
         private readonly ManagedEC2Deployment _ec2Deployment;
+        private readonly ObjectField _objectTest;
+        private readonly InspectorElement _inspectorTest;
+        private readonly Label _inspectorErrorLabel;
         private StatusBox _statusBox;
 
         public ManagedEC2Page(VisualElement container, StateManager stateManager)
@@ -82,6 +87,23 @@ namespace AmazonGameLift.Editor
             _launchClientButton = container.Q<Button>("ManagedEC2LaunchClientButton");
             _launchClientButton.RegisterCallback<ClickEvent>(_ => EditorApplication.EnterPlaymode());
 
+            _objectTest = container.Q<ObjectField>("ObjectFieldTest");
+            _objectTest.objectType = typeof(GameLiftClientSettings);
+
+            _inspectorTest = container.Q<InspectorElement>("InspectorTest");
+            _inspectorErrorLabel = container.Q<Label>("InspectorError");
+
+            _objectTest.RegisterValueChangedCallback(e => UpdateSettingsInspector());
+
+            // TODO: Store the most recent asset path in StateManager and only find the Asset when the current asset is not found
+            string[] guids = AssetDatabase.FindAssets("t:GameLiftClientSettings");
+
+            if (guids.Length > 0 && !string.IsNullOrWhiteSpace(guids[0]))
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+
+                _objectTest.value = AssetDatabase.LoadAssetAtPath<GameLiftClientSettings>(assetPath);
+            }
 
             _container.Q<VisualElement>("ManagedEC2IntegrateLinkParent")
                 .RegisterCallback<ClickEvent>(_ => Application.OpenURL(Urls.ManagedEc2IntegrateLink));
@@ -162,6 +184,23 @@ namespace AmazonGameLift.Editor
             else
             {
                 _statusIndicator.Set(State.Inactive, textProvider.Get(Strings.ManagedEC2DeployStatusNotDeployed));
+            }
+        }
+
+        private void UpdateSettingsInspector()
+        {
+            if (_objectTest.value == null)
+            {
+                _inspectorTest.Unbind();
+                _inspectorTest.AddToClassList("hidden");
+                _inspectorErrorLabel.RemoveFromClassList("hidden");
+            }
+            else
+            {
+                SerializedObject so = new SerializedObject(_objectTest.value);
+                _inspectorTest.Bind(so);
+                _inspectorTest.RemoveFromClassList("hidden");
+                _inspectorErrorLabel.AddToClassList("hidden");
             }
         }
         

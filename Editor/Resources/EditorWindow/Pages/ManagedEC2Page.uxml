@@ -1,7 +1,7 @@
 ﻿<!-- Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:gl="AmazonGameLift.Editor">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uid="UnityEditor.UIElements" xmlns:gl="AmazonGameLift.Editor">
     <Style src="../common.uss"/>
     <ui:VisualElement class="separator separator--vertical separator--large">
         <ui:VisualElement class="separator separator--vertical">
@@ -33,6 +33,15 @@
                     <ui:Button name="ManagedEC2RedeployStackButton" class="button" text="Redeploy"/>
                     <ui:Button name="ManagedEC2DeleteStackButton" class="button" text="Delete"/>
                 </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class=".form__input--inspector">
+                <ui:VisualElement class="form-row form-row--free">
+                    <ui:Label name="ObjectFieldTestLabel" class="form-row__label" text="Client Settings"/>
+                    <uid:ObjectField name="ObjectFieldTest" allow-scene-objects="false" class="form-row__input form__inspector--object-field icon--small"/>
+                </ui:VisualElement>
+                <ui:Button class="button form__inspector--button form-row__input--no-label" text="Import Deployment Settings"/>
+                <uid:InspectorElement name="InspectorTest" class="form__inspector--inspector-element" />
+                <ui:Label name="InspectorError" class="form__inspector--inspector-element hidden" text="No GameLiftClientSettings asset found. Please import the sample game or create one custom."/>
             </ui:VisualElement>
         </ui:Foldout>
         <ui:Foldout name="ManagedEC2LaunchClientTitle" class="foldout" text="Launch Client">
